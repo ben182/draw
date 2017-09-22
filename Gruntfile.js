@@ -19,7 +19,9 @@ module.exports = function (grunt) {
         },
         sass: {
             options: {
-                sourceMap: true
+                sourceMap: true,
+                presets: ['env', 'stage-2'],
+                plugins: ['transform-runtime']
             },
             dist: {
                 files: {

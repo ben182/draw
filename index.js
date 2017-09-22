@@ -32,6 +32,8 @@ io.on('connection', (oClient) => {
     // If not Send oClient to Waiting List and wait
     oClient.activeMatch = 0;
 
+    console.log(oClient);
+
     connectToClientsWithEachOther(oClient);
 
     //console.log('oWaitingList', oWaitingList);
@@ -106,8 +108,19 @@ function connectToClientsWithEachOther(oClient) {
 
             logAllClients();
 
-            sendStatusToClient(oClient.id, 'Matched With ' + oTarget.id);
-            sendStatusToClient(oTarget.id, 'Matched With ' + oClient.id);
+            sendRoomToClient(oClient.id, {
+                partner: oTarget.id,
+                room: iRoomId,
+            });
+            sendRoomToClient(oTarget.id, {
+                partner: oClient.id,
+                room: iRoomId,
+            });
+
+            /* sendRound(iRoomId, {
+                mode: 0, // 0 => drawer 1 => guesser
+                word: 'House'
+            }); */
 
             break;
         }
@@ -119,15 +132,13 @@ function connectToClientsWithEachOther(oClient) {
     oWaitingList[oClient.id] = oClient;
     console.log('No Match Found! Added Client to the Waiting List');
 
-    sendStatusToClient(oClient.id, 'On The Waiting List');
-
 }
 
 // Helper
 function logAllClients() {
-    console.log('Waiting List:', oWaitingList);
+    /* console.log('Waiting List:', oWaitingList);
     console.log('All Clients:', io.sockets.sockets);
-    console.log('All Rooms:', io.sockets.adapter.rooms);
+    console.log('All Rooms:', io.sockets.adapter.rooms); */
 }
 
 function getActiveRoom(oClient) {
@@ -140,8 +151,8 @@ function getActiveRoom(oClient) {
     return false;
 }
 
-function sendStatusToClient(sClientId, sStatus) {
-    io.sockets.connected[sClientId].emit('status', 'Status Change: ' + sStatus);
+function sendRoomToClient(sClientId, sStatus) {
+    io.sockets.connected[sClientId].emit('room', sStatus);
 }
 
 

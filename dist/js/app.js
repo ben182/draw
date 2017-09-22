@@ -3,16 +3,27 @@
 var app = new Vue({
     el: '#app',
     data: {
-        status: '',
-        sSocketId: ''
+        status: 'Waiting for other player',
+        sSocketId: '',
+        bInit: false,
+        oSocket: null,
+        oRoom: {}
+    },
+    methods: {
+        init: function init() {
+            var _that = this;
+
+            this.oSocket = io();
+
+            this.oSocket.on('connect', function () {
+                _that.sSocketId = _that.oSocket.id;
+                _that.bInit = true;
+            });
+        }
     }
 });
 
-var socket = io();
-
-socket.on('connect', function (msg) {
-    app.sSocketId = socket.id;
-});
+app.init();
 
 var windowWidth = window.innerWidth;
 var windowHeight = window.innerHeight;
@@ -30,14 +41,14 @@ function mouseDragged() {
 
     line(mouseX, mouseY, pmouseX, pmouseY);
 
-    socket.emit('move', getRelativeMouse());
+    app.oSocket.emit('move', getRelativeMouse());
 }
 
-socket.on('move', function (msg) {
+app.oSocket.on('move', function (msg) {
     line(msg.mouseX * windowWidth, msg.mouseY * windowHeight, msg.pmouseX * windowWidth, msg.pmouseY * windowHeight);
 });
 
-socket.on('log', function (msg) {
+app.oSocket.on('log', function (msg) {
     console.log(msg);
 
     for (var index = 0; index < msg.length; index++) {
@@ -46,8 +57,8 @@ socket.on('log', function (msg) {
     }
 });
 
-socket.on('status', function (msg) {
-    app.status = msg;
+app.oSocket.on('room', function (msg) {
+    app.oRoom = msg;
 });
 
 function getRelativeMouse() {
